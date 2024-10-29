@@ -77,6 +77,7 @@ in {
       wantedBy = ["multi-user.target"];
 
       preStart = ''
+        mkdir -p ${stateDir}/{bin,etc/shared,queue,var,wodles,logs,lib,tmp,agentless,active-response}
         cp ${pkgs.writeText "ossec.conf" generatedConfig} ${stateDir}/etc/ossec.conf
       '';
 
