@@ -1,6 +1,7 @@
 {cfg, ...}: let
   upstreamConfig = builtins.readFile (builtins.fetchurl {
     url = "https://raw.githubusercontent.com/wazuh/wazuh/refs/tags/v${cfg.package.version}/etc/ossec-agent.conf";
+    sha256 = "sha256-a1+VatIAsfC+0SQhY1cFdNfEt+BNdnRUC40pK6o4kyI=";
   });
 
   substitutes = {
