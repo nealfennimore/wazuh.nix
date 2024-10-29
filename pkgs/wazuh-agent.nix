@@ -234,6 +234,9 @@ in
 
       ${patch}/bin/patch -p1 < ${./makefile-patch-1.patch}
 
+      substituteInPlace src/init/wazuh-server.sh \
+        --replace-warn "cd ''${LOCAL}" ""
+
       substituteInPlace src/external/audit-userspace/autogen.sh \
         --replace-warn "cp INSTALL.tmp INSTALL" ""
 
