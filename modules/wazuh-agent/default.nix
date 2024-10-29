@@ -11,7 +11,7 @@
   pkg = config.services.wazuh-agent.package;
   generatedConfig = import ./generate-agent-config.nix {
     cfg = config.services.wazuh-agent;
-    pkgs = pkgs;
+    inherit pkgs;
   };
 in {
   options = {
@@ -76,15 +76,9 @@ in {
       after = ["network.target" "network-online.target"];
       wantedBy = ["multi-user.target"];
 
-      #preStart = ''
-      #  rsync -av --exclude '/etc/client.keys' --exclude '/logs/' ${pkg}/ ${stateDir}/
-      #  cp ${generatedConfig} ${stateDir}/etc/ossec.conf
-      #  find ${stateDir} -type f -exec chmod 644 {} \;
-      #  find ${stateDir} -type d -exec chmod 750 {} \;
-      #  chmod u+x ${stateDir}/bin/*
-      #  chmod u+x ${stateDir}/active-response/bin/*
-      #  chown -R ${wazuhUser}:${wazuhGroup} ${stateDir}
-      #'';
+      preStart = ''
+        cp ${generatedConfig} ${stateDir}/etc/ossec.conf
+      '';
 
       serviceConfig = {
         Type = "forking";
