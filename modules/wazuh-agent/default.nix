@@ -35,7 +35,7 @@ in {
         default = 1514;
       };
 
-      package = lib.mkPackageOption pkgs "wazuh-agent";
+      package = lib.mkPackageOption pkgs "wazuh-agent" {};
 
       extraConfig = lib.mkOption {
         type = lib.types.lines;
