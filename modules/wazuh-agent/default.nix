@@ -78,6 +78,8 @@ in {
 
       preStart = ''
         mkdir -p ${stateDir}/{bin,etc/shared,queue,var,wodles,logs,lib,tmp,agentless,active-response}
+        find ${stateDir} -type d -exec chmod 750 {} \;
+        chown -R ${wazuhUser}:${wazuhGroup} ${stateDir}
         cp ${pkgs.writeText "ossec.conf" generatedConfig} ${stateDir}/etc/ossec.conf
       '';
 
