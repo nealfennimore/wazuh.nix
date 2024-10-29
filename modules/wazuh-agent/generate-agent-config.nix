@@ -1,5 +1,7 @@
 {cfg, ...}: let
-  upstreamConfig = builtins.readFile (builtins.fetchurl "https://raw.githubusercontent.com/wazuh/wazuh/refs/tags/v${cfg.package.version}/etc/ossec-agent.conf");
+  upstreamConfig = builtins.readFile (builtins.fetchurl {
+    url = "https://raw.githubusercontent.com/wazuh/wazuh/refs/tags/v${cfg.package.version}/etc/ossec-agent.conf";
+  });
 
   substitutes = {
     "<address>IP</address>" = "<address>${cfg.managerIP}</address><port>${builtins.toString cfg.managerPort}</port>";
