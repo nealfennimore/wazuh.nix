@@ -77,7 +77,7 @@ in {
       wantedBy = ["multi-user.target"];
 
       preStart = ''
-        cp ${generatedConfig} ${stateDir}/etc/ossec.conf
+        cp ${pkgs.writeText "ossec.conf" generatedConfig} ${stateDir}/etc/ossec.conf
       '';
 
       serviceConfig = {
