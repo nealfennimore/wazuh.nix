@@ -77,18 +77,23 @@ in {
       wantedBy = ["multi-user.target"];
 
       preStart = ''
-        mkdir -p ${stateDir}/{bin,etc/shared,queue,var,wodles,logs,lib,tmp,agentless,active-response}
+        # Create required directories and set ownership
+        mkdir -p ${stateDir}/{etc/shared,queue,var,wodles,logs,lib,tmp,agentless,active-response}
         find ${stateDir} -type d -exec chmod 750 {} \;
         chown -R ${wazuhUser}:${wazuhGroup} ${stateDir}
+
+        # Generate and copy ossec.config
         cp ${pkgs.writeText "ossec.conf" generatedConfig} ${stateDir}/etc/ossec.conf
+
+        ln -sf ${pkg}/bin/ ${stateDir}
       '';
 
       serviceConfig = {
         Type = "forking";
-        WorkingDirectory = "${stateDir}/bin/";
-        ExecStart = "${pkg}/bin/wazuh-control start";
-        ExecStop = "${pkg}/bin/wazuh-control stop";
-        ExecReload = "${pkg}/bin/wazuh-control reload";
+        WorkingDirectory = "${stateDir}/bin";
+        ExecStart = "${stateDir}/bin/wazuh-control start";
+        ExecStop = "${stateDir}/bin/wazuh-control stop";
+        ExecReload = "${stateDir}/bin/wazuh-control reload";
         KillMode = "process";
         RemainAfterExit = "yes";
       };
