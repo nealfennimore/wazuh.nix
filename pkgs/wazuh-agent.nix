@@ -284,6 +284,9 @@ in
 
       INSTALLDIR=$out USER_DIR=$out ./install.sh binary-install
 
+      substituteInPlace $out/bin/wazuh-control \
+        --replace-fail "cd ''${LOCAL}" ""
+
       chmod u+x $out/bin/* $out/active-response/bin/*
       rm -rf $out/src
     '';
