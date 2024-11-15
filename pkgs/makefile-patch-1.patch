@@ -36,3 +36,65 @@ index 9f36cc5562..7a5a8ffa45 100644
  endif
  endif
  endif
+diff --git a/src/shared/file_op.c b/src/shared/file_op.c
+index 4a7cd9714d..f442facb03 100644
+--- a/src/shared/file_op.c
++++ b/src/shared/file_op.c
+@@ -3473,30 +3473,13 @@ char *w_homedir(char *arg) {
+         buff = w_strtok_r_str_delim(delim, &buff);
+     }
+ #else
+-    if (realpath("/proc/self/exe", buff) != NULL) {
+-        dirname(buff);
+-        buff = w_strtok_r_str_delim(delim, &buff);
+-    }
+-    else if (realpath("/proc/curproc/file", buff) != NULL) {
+-        dirname(buff);
+-        buff = w_strtok_r_str_delim(delim, &buff);
+-    }
+-    else if (realpath("/proc/self/path/a.out", buff) != NULL) {
+-        dirname(buff);
+-        buff = w_strtok_r_str_delim(delim, &buff);
++    // The path was not found so read WAZUH_HOME env var
++    // This is the only thing we need in Linux under nixos since the realpath points to a readonly filesystem
++    char * home_env = NULL;
++    if (home_env = getenv(WAZUH_HOME_ENV), home_env) {
++      snprintf(buff, PATH_MAX, "%s", home_env);
+     }
+ #endif
+-    else if (realpath(arg, buff) != NULL) {
+-        dirname(buff);
+-        buff = w_strtok_r_str_delim(delim, &buff);
+-    } else {
+-        // The path was not found so read WAZUH_HOME env var
+-        char * home_env = NULL;
+-        if (home_env = getenv(WAZUH_HOME_ENV), home_env) {
+-            snprintf(buff, PATH_MAX, "%s", home_env);
+-        }
+-    }
+-
+     if ((stat(buff, &buff_stat) < 0) || !S_ISDIR(buff_stat.st_mode)) {
+         os_free(buff);
+         merror_exit(HOME_ERROR);
+diff --git a/src/shared/privsep_op.c b/src/shared/privsep_op.c
+index e7e0391565..002c601540 100644
+--- a/src/shared/privsep_op.c
++++ b/src/shared/privsep_op.c
+@@ -132,6 +132,8 @@ gid_t Privsep_GetGroup(const char *name)
+ 
+ int Privsep_SetUser(uid_t uid)
+ {
++    return(OS_SUCCESS);
++
+     if (setuid(uid) < 0) {
+         return (OS_INVALID);
+     }
+@@ -147,6 +149,8 @@ int Privsep_SetUser(uid_t uid)
+ 
+ int Privsep_SetGroup(gid_t gid)
+ {
++    return(OS_SUCCESS);
++
+     if (setgroups(1, &gid) == -1) {
+         return (OS_INVALID);
+     }

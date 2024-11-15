@@ -15,6 +15,8 @@
   policycoreutils,
   python312,
   zstd,
+  patchelf,
+  systemd,
   ...
 }: let
   ossec = "/var/ossec";
@@ -289,6 +291,7 @@ in
         --replace-fail "cd ''${LOCAL}" "#"
 
       chmod u+x $out/bin/* $out/active-response/bin/*
+      ${patchelf}/bin/patchelf --add-rpath ${systemd}/lib $out/bin/wazuh-logcollector
       rm -rf $out/src
     '';
   }
