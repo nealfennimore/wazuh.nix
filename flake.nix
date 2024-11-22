@@ -11,22 +11,23 @@
     nixpkgs,
     flake-utils,
   }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
+    {
+      overlays = {
+        wazuh = final: prev: {
+          wazuh-agent = final.callPackage ./pkgs/wazuh-agent.nix {};
+        };
+      };
+      nixosModules = {
+        wazuh-agent = import ./modules/wazuh-agent;
+      };
+    } // flake-utils.lib.eachDefaultSystem (system:
+      let
         pkgs = nixpkgs.legacyPackages.${system};
-      in rec {
-        formatter = pkgs.alejandra;
-        packages = {
-          wazuh-agent = pkgs.callPackage ./pkgs/wazuh-agent.nix {};
-        };
-        overlays = {
-          wazuh = final: prev: {
-            wazuh-agent = final.callPackage ./pkgs/wazuh-agent.nix {};
-          };
-        };
-        nixosModules = {
-          wazuh-agent = import ./modules/wazuh-agent;
-        };
-      }
+      in
+        with pkgs;
+        {
+          formatter = alejandra;
+          packages.wazuh-agent = pkgs.callPackage ./pkgs/wazuh-agent.nix {};
+        }
     );
 }
