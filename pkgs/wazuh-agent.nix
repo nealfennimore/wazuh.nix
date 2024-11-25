@@ -7,9 +7,7 @@
   autoconf,
   automake,
   cmake,
-  libgcc,
   libtool,
-  openssl,
   patch,
   perl,
   policycoreutils,
@@ -17,6 +15,8 @@
   zstd,
   patchelf,
   systemd,
+  removeReferencesTo,
+  libgcc,
   ...
 }: let
   ossec = "/var/ossec";
@@ -198,15 +198,12 @@ in
     dontConfigure = true;
     dontFixup = true;
 
-    buildInputs = [
+    nativeBuildInputs = [
       curl
       autoconf
       automake
       cmake
-      stdenv.cc.libcxx
-      stdenv.cc.coreutils_bin
       libtool
-      openssl
       perl
       policycoreutils
       python312
@@ -264,9 +261,6 @@ in
       USER_CA_STORE="no"
       EOF
 
-      # ln -sf ${libgcc.lib}/lib/libgcc_s.so.1 src/libgcc_s.so.1
-      # ln -sf ${libgcc.lib}/lib/libstdc++.so.6 src/libstdc++.so.6
-
       runHook postPatch
     '';
 
@@ -291,6 +285,12 @@ in
         --replace-fail "cd ''${LOCAL}" "#"
 
       chmod u+x $out/bin/* $out/active-response/bin/*
+
+      ${removeReferencesTo}/bin/remove-references-to \
+        -t ${libgcc.out} \
+        $out/lib/*
+
+
       ${patchelf}/bin/patchelf --add-rpath ${systemd}/lib $out/bin/wazuh-logcollector
       rm -rf $out/src
     '';
