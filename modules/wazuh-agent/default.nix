@@ -11,6 +11,7 @@ let
   stateDir = "/var/ossec";
   cfg = config.services.wazuh-agent;
   pkg = config.services.wazuh-agent.package;
+  agentAuthPassword = config.services.wazuh-agent.agentAuthPassword;
 
   generatedConfig =
     if !(builtins.isNull cfg.config)
@@ -35,6 +36,10 @@ let
     # Generate and copy ossec.config
     cp ${pkgs.writeText "ossec.conf" generatedConfig} ${stateDir}/etc/ossec.conf
 
+    ${lib.optionalString
+      (!(isNull agentAuthPassword))
+      "echo ${agentAuthPassword} >> ${stateDir}/etc/authd.pass"}
+
   '';
 
   daemons =
@@ -43,8 +48,8 @@ let
   mkService = d:
     {
       description = "${d}";
-      wants = [ "network-online.target" ];
-      after = [ "network.target" "network-online.target" ];
+      wants = ["wazuh-agent-auth.service"];
+
       partOf = [ "wazuh.target" ];
       path = cfg.path ++ [ "/run/current-system/sw/bin" "/run/wrappers/bin" ];
       environment = {
@@ -104,6 +109,14 @@ in {
         '';
       };
 
+      agentAuthPassword = lib.mkOption {
+        type = lib.types.nullOr lib.types.nonEmptyStr;
+        default = null;
+        description = ''
+          Password for the auth service
+        '';
+      };
+
       extraConfig = lib.mkOption {
         type = lib.types.lines;
         description = ''
@@ -150,10 +163,30 @@ in {
         (map
           (daemon: nameValuePair daemon (mkService daemon))
           daemons) //
-      { setup-pre-wazuh = {
+      {
+        wazuh-agent-auth = {
+          description = "Sets up wazuh agent auth";
+          after = [ "setup-pre-wazuh.service" "network.target" "network-online.target" ];
+          wants = [ "setup-pre-wazuh.service" "network-online.target" ];
+          before = map (d: "${d}.service") daemons;
+          environment = {
+            WAZUH_HOME = stateDir;
+          };
+
+          serviceConfig = {
+            Type = "oneshot";
+            User = wazuhUser;
+            Group = wazuhGroup;
+            ExecStart = ''
+              ${pkg}/bin/agent-auth -m ${config.services.wazuh-agent.managerIP}
+            '';
+            };
+        };
+
+        setup-pre-wazuh = {
          description = "Sets up wazuh's directory structure";
-         wantedBy = map (d: "${d}.service") daemons;
-         before = map (d: "${d}.service") daemons;
+         wantedBy = ["wazuh-agent-auth.service"];
+         before = ["wazuh-agent-auth.service"];
          serviceConfig = {
            Type = "oneshot";
            User = wazuhUser;
