@@ -152,7 +152,7 @@ in {
     users.groups.${wazuhGroup} = {};
 
     systemd.tmpfiles.rules = [
-      "d ${stateDir} 0750 ${wazuhUser} ${wazuhGroup} 1d"
+      "d ${stateDir}/tmp 0750 ${wazuhUser} ${wazuhGroup} 1d"
     ];
 
     systemd.targets.multi-user.wants = [ "wazuh.target" ];
