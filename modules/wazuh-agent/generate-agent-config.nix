@@ -1,6 +1,5 @@
 # TODO make this use a proper xml serialization function and manipulate values as nix attributes.
-{cfg, ...}:
-let
+{cfg, ...}: let
   upstreamConfig = builtins.readFile (builtins.fetchurl {
     url = "https://raw.githubusercontent.com/wazuh/wazuh/refs/tags/v${cfg.package.version}/etc/ossec-agent.conf";
     sha256 = "sha256-a1+VatIAsfC+0SQhY1cFdNfEt+BNdnRUC40pK6o4kyI=";
@@ -17,6 +16,6 @@ let
   };
 in
   builtins.replaceStrings
-    (builtins.attrNames substitutes)
-    (builtins.attrValues substitutes)
-    upstreamConfig
+  (builtins.attrNames substitutes)
+  (builtins.attrValues substitutes)
+  upstreamConfig
