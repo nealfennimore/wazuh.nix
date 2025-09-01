@@ -133,7 +133,12 @@ in {
 
       path = lib.mkOption {
         type = lib.types.listOf lib.types.path;
-        default = [];
+        default = with pkgs; [
+          util-linux
+          coreutils-full
+          nettools
+          ps
+        ];
         example = lib.literalExpression "[ pkgs.util-linux pkgs.coreutils_full pkgs.nettools ]";
         description = "List of derivations to put in wazuh-agent's path.";
       };
