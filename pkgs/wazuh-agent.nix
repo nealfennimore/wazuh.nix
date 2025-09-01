@@ -165,7 +165,7 @@ in
     '';
 
     installPhase = ''
-      mkdir -p $out/{bin,etc/shared,queue,var,wodles,logs,lib,tmp,agentless.active-response}
+      mkdir -p $out/{bin,etc/shared,queue,var,wodles,logs,lib,tmp,agentless,active-response}
 
       substituteInPlace install.sh \
         --replace-warn "Xroot" "Xnixbld"

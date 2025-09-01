@@ -28,15 +28,16 @@ with lib; let
         dir: "[ -d ${stateDir}/${dir} ] || cp -Rv --no-preserve=ownership ${pkg}/${dir} ${stateDir}/${dir}"
       )
       [
+        "active-response"
+        "agentless"
+        "bin"
+        "etc"
+        "lib"
+        "logs"
         "queue"
+        "tmp"
         "var"
         "wodles"
-        "logs"
-        "lib"
-        "tmp"
-        "agentless"
-        "active-response"
-        "etc"
       ]
     }
 
