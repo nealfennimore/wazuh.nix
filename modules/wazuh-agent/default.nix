@@ -221,6 +221,10 @@ in {
             WAZUH_HOME = stateDir;
           };
 
+          unitConfig = {
+            ConditionPathExists = "!${stateDir}/.agent-registered";
+          };
+
           serviceConfig = let
             ip =
               if config.services.wazuh-agent.registrationIP != null
@@ -235,7 +239,7 @@ in {
             User = wazuhUser;
             Group = wazuhGroup;
             ExecStart = ''
-              ${pkg}/bin/agent-auth -m ${ip} -p ${toString port}
+              ${pkg}/bin/agent-auth -m ${ip} -p ${toString port} && touch ${stateDir}/.agent-registered
             '';
           };
         };
