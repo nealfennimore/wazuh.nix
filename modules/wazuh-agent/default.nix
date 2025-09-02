@@ -94,39 +94,60 @@ in {
     services.wazuh-agent = {
       enable = lib.mkEnableOption "Wazuh agent";
 
-      managerIP = lib.mkOption {
-        type = lib.types.nonEmptyStr;
-        description = ''
-          The IP address or hostname of the manager.
-        '';
-        example = "192.168.1.2";
+      manager = lib.mkOption {
+        type = lib.types.submodule {
+          freeformType = with lib.types;
+            attrsOf (oneOf [
+              nonEmptyStr
+              port
+            ]);
+          options = {
+            host = lib.mkOption {
+              type = lib.types.nonEmptyStr;
+              description = ''
+                The IP address or hostname of the manager.
+              '';
+              example = "192.168.1.2";
+            };
+            port = lib.mkOption {
+              type = lib.types.port;
+              description = ''
+                The port the manager is listening on to receive agent traffic.
+              '';
+              example = 1514;
+              default = 1514;
+            };
+          };
+        };
       };
 
-      managerPort = lib.mkOption {
-        type = lib.types.port;
-        description = ''
-          The port the manager is listening on to receive agent traffic.
-        '';
-        example = 1514;
-        default = 1514;
-      };
-
-      registrationIP = lib.mkOption {
-        type = lib.types.str;
-        description = ''
-          The IP address or hostname of the registration server.
-        '';
-        example = "192.168.1.2";
-        default = null;
-      };
-
-      registrationPort = lib.mkOption {
-        type = lib.types.port;
-        description = ''
-          The port the registration server is listening on to receive agent traffic.
-        '';
-        example = 1515;
-        default = 1515;
+      registration = lib.mkOption {
+        type = lib.types.submodule {
+          freeformType = with lib.types;
+            attrsOf (oneOf [
+              nullOr
+              nonEmptyStr
+              port
+            ]);
+          options = {
+            host = lib.mkOption {
+              type = lib.types.nullOr lib.types.nonEmptyStr;
+              description = ''
+                The IP address or hostname of the registration server.
+              '';
+              example = "192.168.1.2";
+              default = null;
+            };
+            port = lib.mkOption {
+              type = lib.types.port;
+              description = ''
+                The port the registration server is listening on to receive agent traffic.
+              '';
+              example = 1515;
+              default = 1515;
+            };
+          };
+        };
       };
 
       package = lib.mkPackageOption pkgs "wazuh-agent" {};
@@ -227,13 +248,13 @@ in {
 
           serviceConfig = let
             ip =
-              if config.services.wazuh-agent.registrationIP != null
-              then config.services.wazuh-agent.registrationIP
-              else config.services.wazuh-agent.managerIP;
+              if cfg.registration.host != null
+              then cfg.registration.host
+              else cfg.manager.host;
             port =
-              if config.services.wazuh-agent.registrationIP != null
-              then config.services.wazuh-agent.registrationPort
-              else config.services.wazuh-agent.managerPort;
+              if cfg.registration.host != null
+              then cfg.registration.port
+              else cfg.manager.port;
           in {
             Type = "oneshot";
             User = wazuhUser;
