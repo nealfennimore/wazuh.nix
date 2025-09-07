@@ -3,10 +3,14 @@
   automake,
   clang,
   cmake,
+  cmocka,
+  ctestCheckHook,
   curl,
+  doCheck ? false,
   elfutils,
   fetchFromGitHub,
   fetchurl,
+  lcov,
   lib,
   libbfd,
   libbpf,
@@ -65,13 +69,19 @@ in
       sha256 = "sha256-yWth09J1SSEi6xGCA8oAkVcBBEnXyOAWOnTNuXWEnNk=";
     };
 
-    #enableParallelBuilding = true;
+    # enableParallelBuilding = true;
     dontConfigure = true;
     dontFixup = true;
+    inherit doCheck;
 
-    hardeningDisable = [
-      "zerocallusedregs"
-    ];
+    hardeningDisable =
+      if doCheck
+      then [
+        "all"
+      ]
+      else [
+        "zerocallusedregs"
+      ];
 
     nativeBuildInputs = [
       autoconf
@@ -97,16 +107,38 @@ in
       openssl
     ];
 
-    makeFlags = [
-      "-C src"
-      "TARGET=agent"
-      "INSTALLDIR=$out"
+    nativeCheckInputs = [
+      cmocka
+      ctestCheckHook
+      lcov
     ];
 
-    patches = [
-      ./01-makefile-patch.patch
-      ./02-libbpf-bootstrap.patch
-    ];
+    makeFlags =
+      [
+        "-C src"
+        "TARGET=agent"
+        "INSTALLDIR=$out"
+      ]
+      ++ lib.optionals doCheck [
+        "DEBUG=1"
+        "TEST=1"
+        "FSANITIZE=1"
+        # "-d"
+        "VERBOSE=1"
+      ]; # https://github.com/wazuh/wazuh/tree/main/src/unit_tests#compile-wazuh
+
+    patches =
+      [
+        ./01-makefile-patch.patch
+        ./02-libbpf-bootstrap.patch
+      ]
+      ++ lib.optionals doCheck [
+        ./03-data-provider.patch
+        ./04-dbsync.patch
+        ./05-rsync.patch
+        ./06-syscollector.patch
+        ./07-socket-wrappers.patch
+      ];
 
     unpackPhase = ''
       runHook preUnpack
@@ -145,6 +177,7 @@ in
       substituteInPlace src/external/libbpf-bootstrap/CMakeLists.txt \
         --replace-fail "/usr/bin/clang" "${clang}/bin/clang"
 
+      # https://documentation.wazuh.com/4.12/user-manual/reference/unattended-installation.html
       cat << EOF > "etc/preloaded-vars.conf"
       USER_LANGUAGE="en"
       USER_NO_STOP="y"
@@ -159,9 +192,11 @@ in
       EOF
     '';
 
-    preBuild = ''
-      make -C src TARGET=agent settings
-      make -C src TARGET=agent INSTALLDIR=$out deps
+    preBuild = let
+      flags = lib.strings.concatStringsSep " " makeFlags;
+    in ''
+      make ${flags} settings
+      make ${flags} deps
     '';
 
     installPhase = ''
@@ -184,6 +219,17 @@ in
 
       ${patchelf}/bin/patchelf --add-rpath ${systemd}/lib $out/bin/wazuh-logcollector
       rm -rf $out/src
+    '';
+
+    preCheck = ''
+      mkdir -p src/unit_tests/build
+      cd src/unit_tests/build
+      cmake -DTARGET=agent ..
+      make
+    '';
+
+    postCheck = ''
+      cd /build
     '';
 
     meta = {

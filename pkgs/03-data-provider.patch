@@ -1,0 +1,11 @@
+--- a/src/data_provider/CMakeLists.txt
++++ b/src/data_provider/CMakeLists.txt
+@@ -49,7 +49,7 @@ else()
+ endif()
+ 
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2")
++set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2 -fsanitize=address -fsanitize=undefined")
+ 
+ set(CMAKE_CXX_FLAGS_DEBUG "-g")
+ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

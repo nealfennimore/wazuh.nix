@@ -1,0 +1,17 @@
+--- a/src/unit_tests/wrappers/linux/socket_wrappers.c
++++ b/src/unit_tests/wrappers/linux/socket_wrappers.c
+@@ -19,6 +19,14 @@
+ #define BUFFERSIZE 1024
+ #define SENDSTRING "Hello World!\n"
+ 
++uint32_t wnet_order_big(uint32_t value) {
++#if defined(__sparc__) || defined(__BIG_ENDIAN__) || (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) || defined(OS_BIG_ENDIAN)
++    return value;
++#else
++    return (value >> 24) | (value << 24) | ((value & 0xFF0000) >> 8) | ((value & 0xFF00) << 8);
++#endif
++}
++
+ int __wrap_socket(__attribute__((unused))int __domain, __attribute__((unused))int __type, __attribute__((unused))int __protocol) {
+     return mock();
+ }

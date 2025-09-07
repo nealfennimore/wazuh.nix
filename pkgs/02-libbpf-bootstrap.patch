@@ -1,4 +1,4 @@
---- a/src/external/libbpf-bootstrap/CMakeLists.txt
+   --- a/src/external/libbpf-bootstrap/CMakeLists.txt
 +++ b/src/external/libbpf-bootstrap/CMakeLists.txt
 @@ -13,8 +13,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake)
  include(ExternalProject)

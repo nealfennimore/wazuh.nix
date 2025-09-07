@@ -1,0 +1,11 @@
+--- a/src/shared_modules/dbsync/CMakeLists.txt
++++ b/src/shared_modules/dbsync/CMakeLists.txt
+@@ -19,7 +19,7 @@ if(COVERITY)
+   add_definitions(-D__GNUC__=8)
+ endif(COVERITY)
+ 
+-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2 -std=c++14 -pthread")
++set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -Woverloaded-virtual -Wunused -Wcast-align -Wformat=2 -std=c++14 -pthread -fsanitize=address -fsanitize=undefined")
+ 
+ set(CMAKE_CXX_FLAGS_DEBUG "-g")
+ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
