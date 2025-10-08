@@ -217,6 +217,7 @@ in {
     users.groups.${wazuhGroup} = {};
 
     systemd.tmpfiles.rules = [
+      "d ${stateDir} 0750 ${wazuhUser} ${wazuhGroup} -"
       "d ${stateDir}/tmp 0750 ${wazuhUser} ${wazuhGroup} 1d"
     ];
 
